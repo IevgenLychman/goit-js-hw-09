@@ -19,12 +19,20 @@ function startColorChange() {
   timerId = setInterval(() => {
     refs.body.style.backgroundColor = getRandomHexColor();
   }, 1000);
-  refs.startBtn.setAttribute('disabled', true);
-  refs.stopBtn.removeAttribute('disabled', true);
+  setDisabled(refs.startBtn);
+  removeDisabled(refs.stopBtn);
 }
 
 function stopColorChange() {
   clearInterval(timerId);
-  refs.startBtn.removeAttribute('disabled', true);
-  refs.stopBtn.setAttribute('disabled', true);
+  removeDisabled(refs.startBtn);
+  setDisabled(refs.stopBtn);
+}
+
+function removeDisabled(btnType) {
+  btnType.removeAttribute('disabled', true);
+}
+
+function setDisabled(btnType) {
+  btnType.setAttribute('disabled', true);
 }

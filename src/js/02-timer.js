@@ -13,18 +13,40 @@ const refs = {
 
 refs.startBtn.disabled = true;
 
+let settedDate;
+
 const flatPicker = new flatpickr(refs.input, {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    if (selectedDates[0] < new Date()) {
+    settedDate = selectedDates[0];
+    let currentTime = Date.now();
+    if (selectedDates[0] < currentTime) {
       Notiflix.Notify.failure('Please choose a date in the future');
       refs.startBtn.disabled = true;
+      return;
     }
     refs.startBtn.disabled = false;
   },
+});
+
+let intervalId = null;
+let timePeriod = null;
+
+refs.startBtn.addEventListener('click', () => {
+  intervalId = setInterval(() => {
+    const startTime = settedDate.getTime();
+    timePeriod = startTime - Date.now();
+
+    inputTime();
+
+    if (timePeriod <= 1000 || timePeriod <= 0) {
+      refs.startBtn.disabled = true;
+      clearInterval(intervalId);
+    }
+  }, 1000);
 });
 
 function convertMs(ms) {
@@ -50,22 +72,11 @@ function addLeadingZero(value) {
   return value.toString().padStart(2, '0');
 }
 
-refs.startBtn.addEventListener('click', () => {
-  let timerId = null;
-  function countdownTimer() {
-    const setTime = new Date(refs.input.value) - new Date();
-    if (setTime < 0) {
-      clearInterval(timerId);
-      refs.startBtn.disabled = false;
-      return;
-    }
-
-    let timerObject = convertMs(setTime);
-    refs.days.textContent = addLeadingZero(timerObject.days);
-    refs.hours.textContent = addLeadingZero(timerObject.hours);
-    refs.minutes.textContent = addLeadingZero(timerObject.minutes);
-    refs.seconds.textContent = addLeadingZero(timerObject.seconds);
-  }
-
-  timerId = setInterval(countdownTimer, 1000);
-});
+function inputTime() {
+  const milliseconds = convertMs(timePeriod);
+  const { days, hours, minutes, seconds } = milliseconds;
+  refs.days.textContent = `${days}`;
+  refs.hours.textContent = `${hours}`;
+  refs.minutes.textContent = `${minutes}`;
+  refs.seconds.textContent = `${seconds}`;
+}
