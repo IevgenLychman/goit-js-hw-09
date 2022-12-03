@@ -1,50 +1,50 @@
 import Notiflix from 'notiflix';
 
-const refs = {
-  delay: document.querySelector('input[name=delay]'),
-  step: document.querySelector('input[name=step]'),
-  amount: document.querySelector('input[name=amount]'),
-  submitBtn: document.querySelector('button'),
-};
+const form = document.querySelector('form');
 
-refs.submitBtn.addEventListener('click', onSubmit);
+form.addEventListener('submit', onSubmit);
+let amount;
+let delay;
+let delayStep;
 
-let position = 0;
+let position;
 
 function onSubmit(e) {
   e.preventDefault();
-  let delay = Number(refs.delay.value);
-  const step = Number(refs.step.value);
-  let numbers = Number(refs.amount.value);
-  const intervalId = setInterval(() => {
-    if (position > numbers) {
-      clearInterval(intervalId);
-    }
-    if (position <= numbers) {
-      createPromise(position, delay);
-      position += 1;
-      console.log('numbers ', numbers);
-      console.log('position ', position);
-    }
-  }, step);
+
+  delay = Number(e.target[0].value);
+  delayStep = Number(e.target[1].value);
+  amount = Number(e.target[2].value);
+
+  for (let i = 1; i <= amount; i += 1) {
+    position = i;
+
+    createPromise(position, delay)
+      .then(({ position, delay }) => {
+        Notiflix.Notify.success(
+          `✅ Fulfilled promise ${position} in ${delay}ms`
+        );
+      })
+      .catch(({ position, delay }) => {
+        Notiflix.Notify.failure(
+          `❌ Rejected promise ${position} in ${delay}ms`
+        );
+      });
+    delay += delayStep;
+  }
 }
 
 function createPromise(position, delay) {
-  const shouldResolve = Math.random() > 0.3;
-  return new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
+    const shouldResolve = Math.random() > 0.3;
+
     setTimeout(() => {
       if (shouldResolve) {
         resolve({ position, delay });
+      } else {
+        reject({ position, delay });
       }
-      reject({ position, delay });
     }, delay);
   });
-}
-
-function onSucces({ position, delay }) {
-  Notify.success(`✅ Fulfilled promise ${position} in ${delay}ms`);
-}
-
-function onError({ position, delay }) {
-  Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`);
+  return promise;
 }
